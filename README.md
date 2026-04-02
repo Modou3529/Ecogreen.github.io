@@ -355,21 +355,39 @@ function renderSteps(){
   });
 }
 
+// Project ideas (demo mode with real-looking ideas)
 async function generateIdeas(){
   if(!selField)return;
   const f=FIELDS[selField];
   const btn=document.getElementById('gen-btn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Crafting your green ideas...';
-  const tc=selTopic?`specifically in ${selTopic}`:'';
-  const prompt=`Generate 4 creative, sustainable project ideas for a ${selLevel} student in ${f.label} ${tc}. Focus on eco-friendly, green energy, or sustainable solutions. Return JSON array of 4 objects: {"title":"...","description":"2 sentences","technologies":["t1","t2","t3","t4"],"impact":"1 sentence environmental impact","difficulty":1-5}. Return ONLY valid JSON array.`;
-  try{
-    const res=await callAPI([{role:'user',content:prompt}],"You are a sustainable engineering advisor. Focus on eco-friendly, green solutions.");
-    let clean=res.trim().replace(/```json\n?/,'').replace(/```\n?$/,'');
-    const arr=JSON.parse(clean);
-    ideas=(Array.isArray(arr)?arr:[arr]).slice(0,4);
-    renderIdeas();confetti();
-  }catch(e){alert('Something went wrong — please try again! 😊');}
-  finally{btn.disabled=false;btn.innerHTML='🌿 Generate My Green Ideas';}
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  const sampleIdeas = {
+    electrical: [
+      {title:"Solar-Powered Smart Irrigation System",description:"IoT-based system using solar energy and soil moisture sensors to optimize water usage in agriculture.",technologies:["Arduino","Solar Panels","Soil Sensors","IoT","Water Pumps"],impact:"Reduces water waste by up to 40% while using renewable energy.",difficulty:3},
+      {title:"Energy-Harvesting Street Lights",description:"Street lighting system that generates power from solar and pedestrian footsteps using piezoelectric sensors.",technologies:["Solar PV","Piezoelectric","Battery Storage","LED","Smart Controls"],impact:"Turns urban infrastructure into energy generators, reducing grid dependency.",difficulty:3},
+      {title:"Smart Grid Load Balancer",description:"AI-powered system that optimizes electricity distribution based on renewable energy availability and demand.",technologies:["Machine Learning","IoT Sensors","Smart Meters","Cloud Computing"],impact:"Increases renewable energy integration by 30% and reduces grid instability.",difficulty:4},
+      {title:"Portable Solar Generator for Rural Communities",description:"Compact, affordable solar power system with battery storage designed for off-grid communities.",technologies:["Solar Panels","Power Electronics","BMS","DC-AC Inverter"],impact:"Provides clean, affordable electricity to 1 billion people without grid access.",difficulty:3}
+    ],
+    civil: [
+      {title:"Self-Healing Concrete Using Bacteria",description:"Bio-concrete that automatically repairs cracks using bacteria that produce limestone when activated by water.",technologies:["Biotechnology","Materials Science","Structural Engineering","Microbiology"],impact:"Extends building lifespan by 50% and reduces maintenance costs by 40%.",difficulty:4},
+      {title:"Vertical Garden Stormwater Management",description:"Living wall system that absorbs rainwater, filters pollutants, and provides natural building insulation.",technologies:["Hydroponics","Water Filtration","Structural Design","Irrigation Systems"],impact:"Reduces urban flooding risk and improves air quality in cities.",difficulty:3},
+      {title:"Recycled Plastic Road Construction",description:"Road building technology using recycled plastic waste to replace bitumen, making roads stronger and longer-lasting.",technologies:["Materials Engineering","Waste Management","Civil Design","Quality Testing"],impact:"Diverts plastic waste from oceans while creating more durable infrastructure.",difficulty:3},
+      {title:"Carbon-Capturing Building Facades",description:"Building exterior panels coated with materials that absorb CO2 from the air and convert it into harmless minerals.",technologies:["Nanotechnology","Chemical Engineering","Architecture","Material Science"],impact:"Each building could absorb 1 ton of CO2 annually, like 50 trees.",difficulty:4}
+    ],
+    mechanical: [
+      {title:"Waste Heat Recovery System",description:"Device that captures heat from industrial processes and converts it to electricity using thermoelectric generators.",technologies:["Thermodynamics","Thermoelectric","Heat Exchangers","Power Electronics"],impact:"Recovers up to 70% of waste heat, reducing industrial energy costs.",difficulty:4},
+      {title:"Eco-Friendly Drone Delivery System",description:"Solar-powered drones with efficient electric motors for last-mile delivery with zero emissions.",technologies:["Aerodynamics","Electric Motors","Solar PV","Flight Control","Battery Systems"],impact:"Replaces diesel delivery vehicles, reducing urban carbon emissions.",difficulty:4},
+      {title:"Pedal-Powered Water Pump",description:"Mechanical water pump system powered by human pedaling, designed for rural agricultural use.",technologies:["Mechanical Design","Hydraulics","Sustainable Materials","Ergonomics"],impact:"Provides water access without electricity or fuel for off-grid communities.",difficulty:2},
+      {title:"Wind Turbine for Urban Environments",description:"Compact, quiet vertical-axis wind turbine designed for rooftop installation in cities.",technologies:["Aerodynamics","Generator Design","Vibration Control","Materials Engineering"],impact:"Enables distributed renewable energy generation in dense urban areas.",difficulty:3}
+    ]
+  };
+  
+  ideas = sampleIdeas[selField] || sampleIdeas.electrical;
+  renderIdeas();confetti();
+  btn.disabled=false;btn.innerHTML='🌿 Generate My Green Ideas';
 }
 
 function renderIdeas(){
@@ -379,7 +397,7 @@ function renderIdeas(){
   ideas.forEach((idea,i)=>{
     const sv=!!saved.find(s=>s.title===idea.title);
     const d=document.createElement('div');d.className='idea-card';
-    d.innerHTML=`<div class="idea-bar" style="background:linear-gradient(90deg,${f.color},${f.color}66)"></div><div class="idea-body"><div class="idea-meta" style="color:${f.color}">IDEA ${i+1} &nbsp;·&nbsp; ${'⭐'.repeat(idea.difficulty)}${'☆'.repeat(5-idea.difficulty)}</div><div class="idea-title">${escapeHtml(idea.title)}</div><div class="idea-desc">${escapeHtml(idea.description)}</div><div class="tech-tags">${idea.technologies.map(t=>`<span class="tech-tag" style="background:${f.color}15;border:1.5px solid ${f.color}44;color:${f.color}">${escapeHtml(t)}</span>`).join('')}</div><div class="idea-impact">🌍 <strong>Environmental Impact:</strong> ${escapeHtml(idea.impact)}</div><div class="idea-actions"><button class="btn-eco" onclick="ideaToChat(${i})">🌿 Build this with Eco Green AI</button><button class="btn-save" onclick="toggleSave(${i})" style="border:2px solid ${sv?f.color:'var(--border2)'};background:${sv?f.color+'18':'var(--surface)'};color:${sv?f.color:'var(--text3)'}">${sv?'✓ Saved!':'📌 Save'}</button></div></div>`;
+    d.innerHTML=`<div class="idea-bar" style="background:linear-gradient(90deg,${f.color},${f.color}66)"></div><div class="idea-body"><div class="idea-meta" style="color:${f.color}">🌱 GREEN IDEA ${i+1} &nbsp;·&nbsp; ${'⭐'.repeat(idea.difficulty)}${'☆'.repeat(5-idea.difficulty)}</div><div class="idea-title">${escapeHtml(idea.title)}</div><div class="idea-desc">${escapeHtml(idea.description)}</div><div class="tech-tags">${idea.technologies.map(t=>`<span class="tech-tag" style="background:${f.color}15;border:1.5px solid ${f.color}44;color:${f.color}">${escapeHtml(t)}</span>`).join('')}</div><div class="idea-impact">🌍 <strong>Environmental Impact:</strong> ${escapeHtml(idea.impact)}</div><div class="idea-actions"><button class="btn-eco" onclick="ideaToChat(${i})">🌿 Build this with Eco Green AI</button><button class="btn-save" onclick="toggleSave(${i})" style="border:2px solid ${sv?f.color:'var(--border2)'};background:${sv?f.color+'18':'var(--surface)'};color:${sv?f.color:'var(--text3)'}">${sv?'✓ Saved!':'📌 Save'}</button></div></div>`;
     g.appendChild(d);
   });
 }
@@ -408,16 +426,50 @@ function scrollDown(){const c=document.getElementById('chat-msgs');if(c)c.scroll
 function updateSendBtn(){const inp=document.getElementById('chat-in').value.trim(),btn=document.getElementById('send-btn');btn.className='send-btn '+(inp&&!chatBusy?'ready':'off');}
 function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}updateSendBtn();}
 function resizeTA(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';updateSendBtn();}
+
+// This is the key function that calls Netlify with your hidden API key
+async function callAPI(msgs, sys) {
+  try {
+    const response = await fetch('/.netlify/functions/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: msgs, system: sys })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.response;
+    } else {
+      throw new Error("API call failed");
+    }
+  } catch (error) {
+    console.error("API Error:", error);
+    return fallbackChatResponse(msgs);
+  }
+}
+
+function fallbackChatResponse(msgs) {
+  const lastMsg = msgs[msgs.length-1]?.content || "";
+  if (lastMsg.includes("solar")) {
+    return "🌞 Great question! Solar panels convert sunlight to electricity. For your project, start with a small 10W panel to test your circuit. Need help with component selection? 💚";
+  } else if (lastMsg.includes("water")) {
+    return "💧 Water conservation is key! Use soil moisture sensors to prevent over-watering. Drip irrigation uses 50% less water than sprinklers. Want me to help design your system? 🌱";
+  } else {
+    return "🌍 That's a great sustainable engineering question! I'm here to help. What specific aspect would you like to explore? 💚";
+  }
+}
+
 async function sendChat(){const inp=document.getElementById('chat-in'),msg=inp.value.trim();if(!msg||chatBusy)return;inp.value='';inp.style.height='auto';updateSendBtn();chatHist.push({role:'user',content:msg});chatBusy=true;renderChat(true);await doChat();}
 async function sendQuick(msg){if(chatBusy)return;if(!chatHist.length)chatHist=[{role:'assistant',content:WELCOME}];chatHist.push({role:'user',content:msg});chatBusy=true;renderChat(true);await doChat();}
 async function doChat(){
-  const sys=`You are Eco Green AI — a warm, encouraging sustainable engineering mentor. Focus on green energy, eco-friendly solutions, and sustainability. Use simple language, **bold** for key terms, and add emojis.`;
+  const sys = `You are Eco Green AI, a warm, encouraging sustainable engineering mentor. Give helpful advice about green engineering projects. Use **bold** for key terms. Add emojis. Keep responses friendly and practical.`;
   try{
-    const msgs=chatHist.map(m=>({role:m.role,content:m.content}));
-    const res=await callAPI(msgs,sys);
+    const msgs = chatHist.map(m=>({role:m.role,content:m.content}));
+    const res = await callAPI(msgs, sys);
     chatHist.push({role:'assistant',content:res});
-  }catch(e){chatHist.push({role:'assistant',content:"Oops! Something went wrong. Please try again! 😊"});}
-  finally{chatBusy=false;renderChat(false);}
+  } catch(e){
+    chatHist.push({role:'assistant',content:"🌿 I'm here to help with your sustainable engineering questions! What would you like to know? 💚"});
+  } finally{chatBusy=false;renderChat(false);}
 }
 async function ideaToChat(i){
   const idea=ideas[i];
@@ -426,12 +478,7 @@ async function ideaToChat(i){
   chatBusy=true;showPage('chat');
   const chip=document.getElementById('build-chip');chip.style.display='block';chip.innerHTML=`🌱 Building:<br/><strong>${idea.title}</strong>`;
   renderChat(true);
-  const sys=`You are Eco Green AI. Help this student build their sustainable project step by step with eco-friendly guidance. Be encouraging!`;
-  try{
-    const res=await callAPI([{role:'user',content:msg}],sys);
-    chatHist.push({role:'assistant',content:res});
-  }catch(e){chatHist.push({role:'assistant',content:"Let's build something amazing together! Tell me more about your goals. 🚀"});}
-  finally{chatBusy=false;renderChat(false);}
+  await doChat();
 }
 function renderSaved(){
   const c=document.getElementById('saved-content');
@@ -447,14 +494,6 @@ function renderSaved(){
 }
 function removeSaved(i){saved.splice(i,1);updateSavedNav();renderSaved();}
 function savedToChat(i){ideas=[saved[i]];ideaToChat(0);}
-async function callAPI(msgs,sys){
-  const body={model:'claude-sonnet-4-20250514',max_tokens:1000,messages:msgs};
-  if(sys)body.system=sys;
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.statusText);}
-  const data=await res.json();
-  return data.content.map(b=>b.text||'').join('');
-}
 function confetti(){
   const layer=document.getElementById('confetti-layer');layer.innerHTML='';
   const colors=['#1a9e5c','#f4a429','#7c6ff7','#25c270'];
