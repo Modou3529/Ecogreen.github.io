@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECO GREEN - Sustainable Engineering Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Arial,sans-serif;background:#f5fbf7;color:#1a3328;transition:all 0.3s;}
+[data-theme="dark"]{background:#0e1812;color:#d4f0e2;}
+[data-theme="dark"] .card{background:#152218;}
+.nav-links{position:fixed;top:0;left:0;right:0;background:#f5fbf7;padding:15px;display:flex;gap:15px;justify-content:center;z-index:1000;border-bottom:2px solid #1a9e5c;}
+[data-theme="dark"] .nav-links{background:#0e1812;}
+.nav-btn{background:none;border:none;padding:10px 20px;cursor:pointer;font-weight:bold;color:#1a9e5c;border-radius:25px;}
+.nav-btn.active,.nav-btn:hover{background:#1a9e5c;color:white;}
+.theme-toggle{position:fixed;top:12px;right:20px;background:#1a9e5c;color:white;border:none;padding:8px 15px;border-radius:25px;cursor:pointer;z-index:1001;}
+.page{display:none;padding-top:80px;min-height:100vh;}
+.page.active{display:block;}
+.container{max-width:1000px;margin:0 auto;padding:20px;}
+.hero{text-align:center;padding:60px 20px;}
+.hero h1{font-size:56px;color:#1a9e5c;margin-bottom:20px;}
+.btn{background:#1a9e5c;color:white;border:none;padding:12px 30px;border-radius:30px;cursor:pointer;font-size:16px;margin:10px;}
+.btn:hover{transform:translateY(-2px);}
+.card{background:white;border-radius:12px;padding:20px;margin:15px 0;border:1px solid #d0ead9;cursor:pointer;}
+.field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin:30px 0;}
+.idea-card{background:white;border-radius:12px;padding:20px;margin:15px 0;border:1px solid #d0ead9;}
+.chat-msgs{height:400px;overflow-y:auto;border:1px solid #d0ead9;border-radius:12px;padding:15px;margin-bottom:15px;background:white;}
+[data-theme="dark"] .chat-msgs{background:#152218;}
+.msg-row{display:flex;margin:10px 0;}
+.msg-row.user{justify-content:flex-end;}
+.bubble{max-width:70%;padding:10px 15px;border-radius:18px;}
+.bubble.eco{background:#1a9e5c;color:white;}
+.bubble.user{background:#e9ecef;color:#333;}
+[data-theme="dark"] .bubble.user{background:#2a5238;color:white;}
+.chat-input-bar{display:flex;gap:10px;}
+.chat-ta{flex:1;padding:12px;border:1px solid #d0ead9;border-radius:20px;resize:none;}
+.send-btn{background:#1a9e5c;color:white;border:none;padding:12px 24px;border-radius:25px;cursor:pointer;}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+<div class="nav-links">
+<button class="nav-btn" onclick="showPage('hero')">Home</button>
+<button class="nav-btn" onclick="showPage('app')">💡 Ideas</button>
+<button class="nav-btn" onclick="showPage('chat')">🌿 Chat</button>
+<button class="nav-btn" onclick="showPage('saved')">📌 Saved</button>
+</div>
+
+<section id="hero-page" class="page active">
+<div class="hero">
+<h1>🌿 ECO GREEN</h1>
+<h2>The Energy That Moves With You</h2>
+<p style="font-size:18px;margin:20px auto;max-width:600px;">Your sustainable engineering mentor. Generate eco-friendly projects and build a greener future.</p>
+<button class="btn" onclick="showPage('app')">💡 Generate Ideas</button>
+<button class="btn" onclick="showPage('chat')">🌿 Chat with AI</button>
+<div style="margin-top:50px;padding:20px;background:#1a9e5c20;border-radius:12px;">
+<strong>Created by Modou Jaw</strong><br>Founder of ECO GREEN<br><em>"Let's save the world by saving energy"</em>
+</div>
+</div>
+</section>
+
+<section id="app-page" class="page"><div class="container"><h2>🌿 Project Generator</h2><div class="field-grid" id="field-grid"></div><div id="ideas-box"></div></div></section>
+<section id="chat-page" class="page"><div class="container"><h2>🌿 Chat with Eco Green AI</h2><div class="chat-msgs" id="chat-msgs"></div><div class="chat-input-bar"><textarea class="chat-ta" id="chat-in" rows="2" placeholder="Ask about sustainable engineering..."></textarea><button class="send-btn" onclick="sendChat()">Send</button></div></div></section>
+<section id="saved-page" class="page"><div class="container"><h2>📌 Saved Ideas</h2><div id="saved-content"></div></div></section>
+
+<script>
+const FIELDS={electrical:{label:"Electrical Engineering",icon:"⚡",color:"#f4a429"},civil:{label:"Civil Engineering",icon:"🏗️",color:"#1a9e5c"},mechanical:{label:"Mechanical Engineering",icon:"⚙️",color:"#7c6ff7"}};
+const SAMPLE_IDEAS={electrical:[{title:"Solar-Powered Smart Irrigation",description:"IoT system using solar energy to optimize water usage",technologies:["Arduino","Solar Panels"],impact:"Reduces water waste by 40%",difficulty:3}],civil:[{title:"Self-Healing Green Concrete",description:"Bio-concrete that repairs itself using bacteria",technologies:["Biotechnology","Materials"],impact:"Extends building life by 50%",difficulty:4}],mechanical:[{title:"Waste Heat Recovery System",description:"Captures industrial heat to generate electricity",technologies:["Thermoelectric","Heat Exchangers"],impact:"Recovers 70% of waste heat",difficulty:4}]};
+let selField=null,ideas=[],saved=[],chatHist=[],chatBusy=false;
+const WELCOME="🌍💚 Hello! I'm Eco Green AI, your sustainable engineering mentor! Ask me about green energy, eco-friendly projects, or sustainable design!";
+function showPage(p){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(p+'-page').classList.add('active');if(p==='chat'&&!chatHist.length)initChat();if(p==='saved')renderSaved();}
+function renderFields(){const g=document.getElementById('field-grid');g.innerHTML='';Object.entries(FIELDS).forEach(([k,f])=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<div style="font-size:48px">${f.icon}</div><h3>${f.label}</h3><button class="btn" onclick="selectField('${k}')">Select</button>`;g.appendChild(d);});}
+function selectField(f){selField=f;document.getElementById('ideas-box').innerHTML=`<div style="text-align:center;padding:20px"><button class="btn" onclick="generateIdeas()">Generate Ideas</button></div>`;}
+async function generateIdeas(){if(!selField)return;document.getElementById('ideas-box').innerHTML='<div style="text-align:center;padding:20px">Generating...</div>';await new Promise(r=>setTimeout(r,1000));ideas=SAMPLE_IDEAS[selField];renderIdeas();}
+function renderIdeas(){const box=document.getElementById('ideas-box');box.innerHTML=`<h3>Your Green Ideas</h3>${ideas.map((idea,i)=>`<div class="idea-card"><h3>${idea.title}</h3><p>${idea.description}</p><p><strong>Impact:</strong> ${idea.impact}</p><button class="btn" onclick="saveIdea(${i})">Save</button><button class="btn" style="background:#25c270" onclick="chatAbout(${i})">Chat</button></div>`).join('')}<button class="btn" onclick="generateIdeas()">More Ideas</button>`;}
+function saveIdea(i){if(!saved.find(s=>s.title===ideas[i].title))saved.push(ideas[i]);renderSaved();}
+function chatAbout(i){showPage('chat');setTimeout(()=>{document.getElementById('chat-in').value=`Help me build: ${ideas[i].title}`;sendChat();},500);}
+function initChat(){chatHist=[{role:'assistant',content:WELCOME}];renderChat();}
+function renderChat(l){const c=document.getElementById('chat-msgs');c.innerHTML=chatHist.map(m=>`<div class="msg-row ${m.role}"><div class="bubble ${m.role}">${m.content}</div></div>`).join('');c.scrollTop=c.scrollHeight;}
+async function sendChat(){const i=document.getElementById('chat-in'),m=i.value.trim();if(!m||chatBusy)return;i.value='';chatHist.push({role:'user',content:m});renderChat();chatBusy=true;try{const r=await fetch('/.netlify/functions/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHist})});const d=await r.json();chatHist.push({role:'assistant',content:d.response||"I'm here to help!"});}catch(e){chatHist.push({role:'assistant',content:"🌿 I'm here to help with sustainable engineering!"});}chatBusy=false;renderChat();}
+function renderSaved(){const c=document.getElementById('saved-content');c.innerHTML=saved.length?saved.map((s,i)=>`<div class="idea-card"><h3>${s.title}</h3><button class="btn" onclick="removeSaved(${i})">Remove</button></div>`).join(''):'<p>No saved ideas</p>';}
+function removeSaved(i){saved.splice(i,1);renderSaved();}
+function toggleTheme(){const d=document.documentElement.getAttribute('data-theme')==='dark';document.documentElement.setAttribute('data-theme',d?'light':'dark');localStorage.setItem('theme',d?'light':'dark');}
+const st=localStorage.getItem('theme');if(st)document.documentElement.setAttribute('data-theme',st);
+renderFields();
+</script>
+</body>
+</html>
