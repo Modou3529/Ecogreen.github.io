@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -31,7 +31,7 @@
   "@type": "WebApplication",
   "name": "EduBuild — Eco Green Engineering Hub",
   "url": "https://moodoujaw.github.io/edubuild/",
-  "description": "A free AI-powered platform that helps engineering students bring their abstract ideas to life through step-by-step mentoring. Created by Modou Jaw, USET student.",
+  "description": "A free AI-powered platform that generates engineering project ideas and provides step-by-step mentoring for university students. Created by Modou Jaw.",
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Web Browser",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -444,7 +444,7 @@ footer { border-top:1px solid var(--border); padding:44px 36px; text-align:cente
 <!-- ===== GEMINI API KEY MODAL ===== -->
 <div id="api-modal-overlay">
   <div class="api-modal">
-    <span class="modal-gemini-icon">✨</span>
+    <span class="modal-gemini-icon">🤖</span>
     <h2 class="modal-title">Welcome to EduBuild!</h2>
     <p class="modal-sub">
       To power your AI experience, EduBuild uses the <strong>Google Gemini API</strong>.<br/>
@@ -457,9 +457,9 @@ footer { border-top:1px solid var(--border); padding:44px 36px; text-align:cente
       <button class="modal-eye" id="toggle-eye" onclick="toggleEye()" title="Show/hide key">👁️</button>
     </div>
     <p class="modal-hint">
-      🔑 Don't have a key? Get one free at
+      🔑 Get your API key at
       <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>
-      — no credit card needed!
+      — it's completely free, no credit card needed!
     </p>
     <button class="modal-save-btn" onclick="saveApiKey()">✨ Save Key &amp; Start Exploring</button>
     <br/>
@@ -515,7 +515,7 @@ footer { border-top:1px solid var(--border); padding:44px 36px; text-align:cente
       Your Engineering<br/>Ideas Start with<br/><span class="eco-word">Eco Green</span>
     </h1>
     <p class="hero-tagline">🌿 The energy that moves with you —<br/>let's save the world by saving energy.</p>
-    <p class="hero-mission">Whether you have a rough idea sketched on paper or a vision in your head, Eco Green helps you bring it to life. Get guidance, build step by step, and turn your abstract ideas into something real that matters. 🚀</p>
+    <p class="hero-mission">Whether you're a first-year student or writing your thesis, Eco Green is your friendly AI engineering mentor. Get ideas, get guidance, and build something that truly matters. 🚀</p>
     <div class="hero-btns">
       <button class="btn-big" onclick="showPage('app')">✨ Generate Project Ideas</button>
       <button class="btn-outline" onclick="showPage('chat')">🌿 Chat with Eco Green</button>
@@ -584,7 +584,7 @@ footer { border-top:1px solid var(--border); padding:44px 36px; text-align:cente
         </p>
         <div class="founder-badges">
           <span class="fbadge">⚡ Electrical Engineering</span>
-          <span class="fbadge">🌍 USET</span>
+          <span class="fbadge">🎓 USET</span>
           <span class="fbadge">📅 Year 3 · Sem 2</span>
           <span class="fbadge">🌿 Eco Green Founder</span>
         </div>
@@ -613,7 +613,7 @@ footer { border-top:1px solid var(--border); padding:44px 36px; text-align:cente
 <section id="app-section" class="page">
   <div class="app-wrap">
     <h2 class="app-title">💡 Project Idea Generator</h2>
-    <p class="app-sub">Tell us your field and level — we'll turn your abstract ideas into real, buildable projects! 🎉</p>
+    <p class="app-sub">Tell us a little about yourself and we'll craft 4 project ideas just for you! 🎉</p>
     <div class="gemini-banner" id="gemini-banner" onclick="openApiModal()">
       <span class="gemini-logo">✨</span>
       <div>
@@ -708,98 +708,150 @@ const LEVELS=[
   {id:"Research Level",label:"Research 🔬",desc:"Postgrad / thesis"},
 ];
 const WELCOME=`Hey there! 👋 Welcome — I'm so glad you stopped by!\n\nI'm **Eco Green**, your personal AI engineering mentor, and I'm genuinely here to help you:\n\n💡 Understand any project idea deeply\n🛠️ Plan your build step by step\n📚 Find the right tools and resources\n⚡ Answer any engineering question you have\n\n*"The energy that moves with you — let's save the world by saving energy!"* 🌍\n\nSo, what are you working on? I can't wait to hear your ideas! 😊`;
-const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent';
+
+const GEMINI_MODEL='gemini-2.0-flash';
+const SYS_PROMPT=`You are Eco Green — a warm, friendly, encouraging AI engineering mentor for university students, created by Modou Jaw (Electrical & Electronics Engineering student, Year 3 Semester 2, University of Applied Science Engineering and Technology (USET)) as part of the Eco Green initiative. Speak like a supportive, knowledgeable older student. Use simple language. Use **bold** for key terms. Add an emoji or two. Specialise in Electrical, Civil, and Mechanical Engineering.`;
 
 // ===== STATE =====
-let geminiKey='',selField=null,selTopic='',selLevel='Intermediate';
+let selField=null,selTopic='',selLevel='Intermediate';
 let ideas=[],saved=[],chatHist=[],chatBusy=false;
 
 // ===== THEME =====
-function applyTheme(dark, animate) {
-  if (!animate) document.documentElement.classList.add('no-transition');
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = dark ? '☀️' : '🌙';
-  if (!animate) {
-    requestAnimationFrame(() => requestAnimationFrame(() =>
+function applyTheme(dark,animate){
+  if(!animate)document.documentElement.classList.add('no-transition');
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  const btn=document.getElementById('theme-btn');
+  if(btn)btn.textContent=dark?'☀️':'🌙';
+  if(!animate){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>
       document.documentElement.classList.remove('no-transition')
     ));
   }
 }
-function toggleTheme() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const next = !isDark;
-  localStorage.setItem('edubuild-theme', next ? 'dark' : 'light');
-  applyTheme(next, true);
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  localStorage.setItem('edubuild-theme',!isDark?'dark':'light');
+  applyTheme(!isDark,true);
 }
-// Apply on load without animation flash
-(function() {
-  const saved = localStorage.getItem('edubuild-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(saved ? saved === 'dark' : prefersDark, false);
+(function(){
+  const s=localStorage.getItem('edubuild-theme');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(s?s==='dark':prefersDark,false);
 })();
+
+// ===== GEMINI API =====
+function getApiKey(){ return localStorage.getItem('edubuild-api-key') || ''; }
+
+async function callGemini(userPrompt, systemOverride){
+  const sys = systemOverride || SYS_PROMPT;
+  const key = getApiKey();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      system_instruction:{ parts:[{text: sys}] },
+      contents:[{role:'user', parts:[{text: userPrompt}]}],
+      generationConfig:{maxOutputTokens:1024}
+    })
+  });
+  const data = await res.json();
+  if(res.status === 400 || res.status === 401 || res.status === 403){
+    localStorage.removeItem('edubuild-api-key'); updateKeyStatus(); openApiModal();
+    throw new Error('Invalid API key. Please enter a valid Gemini API key.');
+  }
+  if(!res.ok) throw new Error(data?.error?.message || res.statusText);
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+async function callGeminiChat(messages, systemOverride){
+  const sys = systemOverride || SYS_PROMPT;
+  const key = getApiKey();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  // Map roles: Gemini uses 'user' and 'model' (not 'assistant')
+  const contents = messages
+    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts:[{text: m.content || ''}] }));
+  // Merge consecutive same-role
+  const merged = [];
+  for(const m of contents){
+    if(merged.length && merged[merged.length-1].role === m.role){
+      merged[merged.length-1].parts[0].text += ' ' + m.parts[0].text;
+    } else { merged.push({...m, parts:[{...m.parts[0]}]}); }
+  }
+  while(merged.length && merged[0].role === 'model') merged.shift();
+  if(!merged.length) throw new Error('Nothing to send.');
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      system_instruction:{ parts:[{text: sys}] },
+      contents: merged,
+      generationConfig:{maxOutputTokens:1024}
+    })
+  });
+  const data = await res.json();
+  if(res.status === 400 || res.status === 401 || res.status === 403){
+    localStorage.removeItem('edubuild-api-key'); updateKeyStatus(); openApiModal();
+    throw new Error('Invalid API key. Please enter a valid Gemini API key.');
+  }
+  if(!res.ok) throw new Error(data?.error?.message || res.statusText);
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
 
 // ===== API KEY MANAGEMENT =====
 function loadKey(){
-  const k=localStorage.getItem('eco_gemini_key')||'';
-  geminiKey=k;
+  const saved = localStorage.getItem('edubuild-api-key');
+  if(saved){
+    document.getElementById('api-key-input').value = saved;
+    document.getElementById('api-modal-overlay').classList.add('hidden');
+  } else {
+    document.getElementById('api-modal-overlay').classList.remove('hidden');
+  }
   updateKeyStatus();
-  if(k) document.getElementById('api-modal-overlay').classList.add('hidden');
 }
 function saveApiKey(){
-  const inp=document.getElementById('api-key-input');
-  const k=inp.value.trim();
-  if(!k){alert('Please paste your Gemini API key first! 😊');return;}
-  if(!k.startsWith('AIza')){
-    if(!confirm('This doesn\'t look like a Gemini key (usually starts with "AIza"). Save anyway?'))return;
-  }
-  geminiKey=k;
-  localStorage.setItem('eco_gemini_key',k);
-  document.getElementById('api-modal-overlay').classList.add('hidden');
-  updateKeyStatus();
-  confetti();
-}
-function skipApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key){ alert('Please paste your Gemini API key first.'); return; }
+  if(key.length < 20){ alert('That does not look like a valid Gemini API key.\n\nGet yours free at: aistudio.google.com/app/apikey'); return; }
+  localStorage.setItem('edubuild-api-key', key);
   document.getElementById('api-modal-overlay').classList.add('hidden');
   updateKeyStatus();
 }
+function skipApiKey(){ document.getElementById('api-modal-overlay').classList.add('hidden'); }
 function openApiModal(){
-  const inp=document.getElementById('api-key-input');
-  inp.value=geminiKey||'';
-  inp.type='password';
-  document.getElementById('toggle-eye').textContent='👁️';
   document.getElementById('api-modal-overlay').classList.remove('hidden');
 }
 function toggleEye(){
-  const inp=document.getElementById('api-key-input');
-  const eye=document.getElementById('toggle-eye');
-  if(inp.type==='password'){inp.type='text';eye.textContent='🙈';}
-  else{inp.type='password';eye.textContent='👁️';}
+  const inp = document.getElementById('api-key-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 function updateKeyStatus(){
+  const hasKey = !!localStorage.getItem('edubuild-api-key');
   const dot=document.getElementById('status-dot');
   const txt=document.getElementById('status-text');
   const bannerTitle=document.getElementById('banner-title');
   const bannerSub=document.getElementById('banner-sub');
   const bannerAction=document.getElementById('banner-action');
   const banner=document.getElementById('gemini-banner');
-  if(geminiKey){
+  if(hasKey){
     dot.className='status-indicator active';
-    txt.textContent='Gemini ✓ Connected';
-    bannerTitle.textContent='✅ Gemini AI Connected';
-    bannerSub.textContent='Powered by Google Gemini 2.0 Flash · Click to change key';
-    bannerAction.textContent='Change →';
+    txt.textContent='AI ✓ Connected';
+    bannerTitle.textContent='✅ Eco Green AI Ready';
+    bannerSub.textContent='Powered by Gemini AI · API key active';
+    bannerAction.textContent='Ready ✓';
     banner.style.background='linear-gradient(135deg,#e3f6ec,#edfaf3)';
     banner.style.borderColor='#a8d8bc';
-  }else{
+  } else {
     dot.className='status-indicator inactive';
     txt.textContent='No API Key';
-    bannerTitle.textContent='⚠️ Gemini API Key Required';
-    bannerSub.textContent='Click here to add your free Gemini API key and unlock idea generation';
-    bannerAction.textContent='Set Key →';
-    banner.style.background='linear-gradient(135deg,#fef9ec,#fff8e1)';
-    banner.style.borderColor='#f4a42966';
+    bannerTitle.textContent='⚠️ API Key Required';
+    bannerSub.textContent='Add your free Gemini API key to enable AI features';
+    bannerAction.textContent='Add Key →';
+    banner.style.background='';
+    banner.style.borderColor='';
   }
+  banner.style.cursor='default';
 }
 document.getElementById('api-key-input').addEventListener('keydown',e=>{
   if(e.key==='Enter') saveApiKey();
@@ -859,57 +911,16 @@ function renderSteps(){
   });
 }
 
-// ===== GEMINI API =====
-async function callGemini(prompt,systemInstruction=''){
-  if(!geminiKey){openApiModal();throw new Error('No API key.');}
-  const body={
-    contents:[{role:'user',parts:[{text:prompt}]}],
-    generationConfig:{maxOutputTokens:1200,temperature:0.85}
-  };
-  if(systemInstruction) body.systemInstruction={parts:[{text:systemInstruction}]};
-  const res=await fetch(`${GEMINI_URL}?key=${geminiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!res.ok){
-    const e=await res.json();
-    const msg=e.error?.message||res.statusText;
-    if(msg.includes('API_KEY_INVALID')||res.status===401||res.status===403){
-      geminiKey='';localStorage.removeItem('eco_gemini_key');updateKeyStatus();openApiModal();
-      throw new Error('Invalid API key.');
-    }
-    throw new Error(msg);
-  }
-  const data=await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-}
-async function callGeminiChat(messages,systemInstruction=''){
-  if(!geminiKey){openApiModal();throw new Error('No API key.');}
-  const contents=messages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-  const body={contents,generationConfig:{maxOutputTokens:1200,temperature:0.85}};
-  if(systemInstruction) body.systemInstruction={parts:[{text:systemInstruction}]};
-  const res=await fetch(`${GEMINI_URL}?key=${geminiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!res.ok){
-    const e=await res.json();
-    const msg=e.error?.message||res.statusText;
-    if(msg.includes('API_KEY_INVALID')||res.status===401||res.status===403){
-      geminiKey='';localStorage.removeItem('eco_gemini_key');updateKeyStatus();openApiModal();
-      throw new Error('Invalid API key.');
-    }
-    throw new Error(msg);
-  }
-  const data=await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-}
-
 // ===== GENERATE IDEAS =====
 async function generateIdeas(){
   if(!selField)return;
-  if(!geminiKey){openApiModal();return;}
   const f=FIELDS[selField];
   const btn=document.getElementById('gen-btn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Crafting your ideas...';
   const tc=selTopic?`specifically in the area of ${selTopic}`:'';
   const prompt=`Generate 4 creative, practical project ideas for a ${selLevel} student in ${f.label} ${tc}.\n\nFor each idea return JSON with EXACTLY this format:\n{"title":"Project title","description":"2 clear sentences","technologies":["tech1","tech2","tech3","tech4"],"impact":"1 sentence real-world impact","difficulty":3}\n\nDifficulty: 1=very easy, 5=very hard. Return ONLY a valid JSON array of exactly 4 objects. No markdown, no extra text.`;
   try{
-    const res=await callGemini(prompt,'You are a friendly engineering project advisor. Return only valid JSON.');
+    const res=await callGemini(prompt,'You are an engineering project advisor. Return ONLY a valid JSON array of 4 project ideas. No markdown, no extra text, no explanation.');
     let clean=res.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     const match=clean.match(/\[[\s\S]*\]/);
     if(match)clean=match[0];
@@ -917,9 +928,10 @@ async function generateIdeas(){
     ideas=(Array.isArray(arr)?arr:[arr]).slice(0,4);
     renderIdeas();confetti();
   }catch(e){
-    if(!e.message.includes('API key'))alert('Something went wrong — please try again! 😊\n'+e.message);
+    alert('Could not generate ideas. Please try again!\n'+e.message);
   }finally{btn.disabled=false;btn.innerHTML='✨ Generate My Project Ideas';}
 }
+
 function renderIdeas(){
   const box=document.getElementById('ideas-box'),g=document.getElementById('ideas-grid');
   box.style.display='block';g.innerHTML='';
@@ -957,7 +969,10 @@ function updateSavedNav(){
 // ===== CHAT =====
 function initChat(){chatHist=[{role:'assistant',content:WELCOME}];renderChat();}
 function md(t){
-  return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br/>');
+  return t
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/\n/g,'<br/>');
 }
 function renderChat(loading=false){
   const c=document.getElementById('chat-msgs');c.innerHTML='';
@@ -976,52 +991,50 @@ function renderChat(loading=false){
   document.getElementById('qprompts').style.display=chatHist.length<=1?'flex':'none';
 }
 function scrollDown(){const c=document.getElementById('chat-msgs');if(c)c.scrollTop=c.scrollHeight;}
-function updateSendBtn(){const inp=document.getElementById('chat-in').value.trim(),btn=document.getElementById('send-btn');btn.className='send-btn '+(inp&&!chatBusy?'ready':'off');}
+function updateSendBtn(){
+  const inp=document.getElementById('chat-in').value.trim();
+  const btn=document.getElementById('send-btn');
+  btn.className='send-btn '+(inp&&!chatBusy?'ready':'off');
+}
 function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}updateSendBtn();}
 function resizeTA(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';updateSendBtn();}
+
 async function sendChat(){
   const inp=document.getElementById('chat-in'),msg=inp.value.trim();
   if(!msg||chatBusy)return;
-  if(!geminiKey){openApiModal();return;}
   inp.value='';inp.style.height='auto';updateSendBtn();
-  chatHist.push({role:'user',content:msg});chatBusy=true;renderChat(true);
+  chatHist.push({role:'user',content:msg});
+  chatBusy=true;renderChat(true);
   await doChat();
 }
 async function sendQuick(msg){
   if(chatBusy)return;
-  if(!geminiKey){openApiModal();return;}
-  if(!chatHist.length)chatHist=[{role:'assistant',content:WELCOME}];
-  chatHist.push({role:'user',content:msg});chatBusy=true;renderChat(true);
+  if(!chatHist.length)initChat();
+  chatHist.push({role:'user',content:msg});
+  chatBusy=true;renderChat(true);
   await doChat();
 }
 async function doChat(){
-  const sys=`You are Eco Green — a warm, friendly, encouraging AI engineering mentor for university students, created by Modou Jaw (Electrical & Electronics Engineering student, Year 3 Semester 2, University of Applied Science Engineering and Technology (USET)) as part of the Eco Green initiative. Speak like a supportive, knowledgeable older student. Use simple language. Use **bold** for key terms. Add an emoji or two. Specialise in Electrical, Civil, and Mechanical Engineering.`;
   try{
-    const msgs=chatHist.filter(m=>m.role!=='system');
-    const res=await callGeminiChat(msgs,sys);
-    chatHist.push({role:'assistant',content:res});
+    const msgs=chatHist.filter(m=>m.role==='user'||m.role==='assistant');
+    const reply=await callGeminiChat(msgs);
+    chatHist.push({role:'assistant',content:reply||'Sorry, I got an empty response. Please try again!'});
   }catch(e){
-    if(!e.message.includes('API key'))
-      chatHist.push({role:'assistant',content:"Oops, something went a bit wrong! Could you try again? I'm still here for you! 😊"});
-  }finally{chatBusy=false;renderChat(false);}
+    chatHist.push({role:'assistant',content:'⚠️ '+( e.message||'Something went wrong')+'. Please try again!'});
+  }finally{
+    chatBusy=false;renderChat(false);
+  }
 }
 async function ideaToChat(i){
   const idea=ideas[i];
-  if(!geminiKey){openApiModal();return;}
   const msg=`Hi Eco Green! I'm really excited about this project: **${idea.title}**. ${idea.description} Can you help me plan how to build it step by step?`;
-  chatHist=[{role:'assistant',content:WELCOME},{role:'user',content:msg}];
+  chatHist=[{role:'user',content:msg}];
   chatBusy=true;showPage('chat');
   const chip=document.getElementById('build-chip');
-  chip.style.display='block';chip.innerHTML=`🔨 Building:<br/><strong>${idea.title}</strong>`;
+  chip.style.display='block';
+  chip.innerHTML=`🔨 Building:<br/><strong>${idea.title}</strong>`;
   renderChat(true);
-  const sys=`You are Eco Green — a warm, friendly AI engineering mentor by Modou Jaw (USET). Help this student build their project step by step. Use **bold** for key points. Be encouraging! Add emojis.`;
-  try{
-    const res=await callGemini(msg,sys);
-    chatHist.push({role:'assistant',content:res});
-  }catch(e){
-    if(!e.message.includes('API key'))
-      chatHist.push({role:'assistant',content:"Let's build something amazing together! Tell me more about your goals and I'll put together a step-by-step plan. 🚀"});
-  }finally{chatBusy=false;renderChat(false);}
+  await doChat();
 }
 
 // ===== SAVED =====
@@ -1068,14 +1081,10 @@ function confetti(){
     p.style.cssText=`left:${10+Math.random()*80}%;top:12%;width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${isCircle?'50%':'4px'};animation-delay:${Math.random()*0.5}s;animation-duration:${1.5+Math.random()*0.8}s`;
     layer.appendChild(p);
   }
-  setTimeout(()=>layer.innerHTML='',2500);
+  setTimeout(()=>{layer.innerHTML='';},2500);
 }
 
 // ===== INIT =====
-loadKey();
 renderFields();
-renderSteps();
-document.getElementById('chat-in').addEventListener('input',updateSendBtn);
+loadKey();
 </script>
-</body>
-</html>
